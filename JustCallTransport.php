@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\Notifier\Bridge\Plivo;
+namespace Symfony\Component\Notifier\Bridge\JustCall;
 
 use Symfony\Component\Notifier\Exception\InvalidArgumentException;
 use Symfony\Component\Notifier\Exception\TransportException;
@@ -25,16 +25,13 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
-final class PlivoTransport extends AbstractTransport
+final class JustCallTransport extends AbstractTransport
 {
-    protected const HOST = 'api.plivo.com';
+    protected const HOST = 'api.justcall.io';
 
     public function __construct(
-        private readonly string $authId,
-        private readonly string $authToken,
-        private readonly string $from,
-        private readonly ?string $statusUrl = null,
-        private readonly ?string $statusUrlMethod = null,
+        private readonly string $apiKey,
+        private readonly string $apiSecret,
         HttpClientInterface $client = null,
         EventDispatcherInterface $dispatcher = null,
     )
@@ -44,7 +41,7 @@ final class PlivoTransport extends AbstractTransport
 
     public function __toString(): string
     {
-        return sprintf('plivo://%s?from=%s', $this->getEndpoint(), $this->from);
+        return 'justCall://' . $this->getEndpoint();
     }
 
     public function supports(MessageInterface $message): bool
@@ -58,29 +55,27 @@ final class PlivoTransport extends AbstractTransport
             throw new UnsupportedMessageTypeException(__CLASS__, SmsMessage::class, $message);
         }
 
-        if (!preg_match('/^[a-zA-Z0-9\s]{2,11}$/', $this->from) && !preg_match('/^\+[1-9]\d{1,14}$/', $this->from)) {
-            throw new InvalidArgumentException(sprintf('The "From" number "%s" is not a valid phone number, shortcode, or alphanumeric sender ID.', $this->from));
+        if (!preg_match('/^\+[1-9]\d{1,14}$/', $from = $message->getFrom())) {
+            throw new InvalidArgumentException(sprintf('The "From" number "%s" is not an valid E.164 number', $from));
         }
 
-        $endpoint = sprintf('https://%s/v1/Account/%s/Message/', $this->getEndpoint(), $this->authId);
+        $endpoint = sprintf('https://%s/v2/texts/new', $this->getEndpoint());
         $response = $this->client->request('POST', $endpoint, [
-            'auth_basic' => $this->authId.':'.$this->authToken,
+            'auth_basic' => $this->apiKey.':'.$this->apiSecret,
             'body' => [
-                'src' => $this->from,
-                'dst' => $message->getPhone(),
-                'text' => $message->getSubject(),
-                'url' => $this->statusUrl,
-                'method' => $this->statusUrlMethod,
+                'justcall_number' => $from,
+                'contact_number' => $message->getPhone(),
+                'body' => $message->getSubject(),
             ],
         ]);
 
         try {
             $statusCode = $response->getStatusCode();
         } catch (TransportExceptionInterface $e) {
-            throw new TransportException('Could not reach the remote Plivo server.', $response, 0, $e);
+            throw new TransportException('Could not reach the remote JustCall server.', $response, 0, $e);
         }
 
-        if (202 !== $statusCode) {
+        if (200 !== $statusCode) {
             $error = $response->toArray(false);
 
             throw new TransportException('Unable to send the SMS: '.$error['error'].sprintf(' (request %s).', $error['api_id']), $response);
@@ -89,7 +84,7 @@ final class PlivoTransport extends AbstractTransport
         $success = $response->toArray(false);
 
         $sentMessage = new SentMessage($message, (string) $this);
-        $sentMessage->setMessageId($success['message_uuid'][0]);
+        $sentMessage->setMessageId($success['id']);
 
         return $sentMessage;
     }

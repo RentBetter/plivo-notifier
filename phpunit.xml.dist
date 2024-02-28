@@ -13,7 +13,7 @@
     </php>
 
     <testsuites>
-        <testsuite name="Symfony Plivo Notifier Bridge Test Suite">
+        <testsuite name="Symfony JustCall Notifier Bridge Test Suite">
             <directory>./Tests/</directory>
         </testsuite>
     </testsuites>
