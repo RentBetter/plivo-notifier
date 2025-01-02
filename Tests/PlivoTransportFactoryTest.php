@@ -12,16 +12,17 @@
 namespace Symfony\Component\Notifier\Bridge\Plivo\Tests;
 
 use Symfony\Component\Notifier\Bridge\Plivo\PlivoTransportFactory;
+use Symfony\Component\Notifier\Test\AbstractTransportFactoryTestCase;
 use Symfony\Component\Notifier\Test\TransportFactoryTestCase;
 
-final class PlivoTransportFactoryTest extends TransportFactoryTestCase
+final class PlivoTransportFactoryTest extends AbstractTransportFactoryTestCase
 {
     public function createFactory(): PlivoTransportFactory
     {
         return new PlivoTransportFactory();
     }
 
-    public function createProvider(): iterable
+    public static function createProvider(): iterable
     {
         yield [
             'plivo://host.test?from=0611223344',
@@ -29,7 +30,7 @@ final class PlivoTransportFactoryTest extends TransportFactoryTestCase
         ];
     }
 
-    public function supportsProvider(): iterable
+    public static function supportsProvider(): iterable
     {
         yield [true, 'plivo://authId:authToken@default?from=0611223344'];
         yield [false, 'somethingElse://authId:authToken@default?from=0611223344'];
@@ -40,7 +41,7 @@ final class PlivoTransportFactoryTest extends TransportFactoryTestCase
         yield 'missing option: from' => ['plivo://authId:authToken@default'];
     }
 
-    public function unsupportedSchemeProvider(): iterable
+    public static function unsupportedSchemeProvider(): iterable
     {
         yield ['somethingElse://authId:authToken@default?from=0611223344'];
         yield ['somethingElse://authId:authToken@default']; // missing "from" option

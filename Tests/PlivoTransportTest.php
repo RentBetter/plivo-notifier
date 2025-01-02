@@ -23,25 +23,25 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class PlivoTransportTest extends TransportTestCase
 {
-    public function createTransport(HttpClientInterface $client = null, string $from = 'from'): PlivoTransport
+    public static function createTransport(HttpClientInterface $client = null, string $from = 'from'): PlivoTransport
     {
-        return new PlivoTransport('authId', 'authToken', $from, 'https://localhost/status', null, $client ?? $this->createMock(HttpClientInterface::class));
+        return new PlivoTransport('authId', 'authToken', $from, 'https://localhost/status', null, $client ?? (new self())->createMock(HttpClientInterface::class));
     }
 
-    public function toStringProvider(): iterable
+    public static function toStringProvider(): iterable
     {
-        yield ['plivo://api.plivo.com?from=from', $this->createTransport()];
+        yield ['plivo://api.plivo.com?from=from', self::createTransport()];
     }
 
-    public function supportedMessagesProvider(): iterable
+    public static function supportedMessagesProvider(): iterable
     {
         yield [new SmsMessage('0611223344', 'Hello!')];
     }
 
-    public function unsupportedMessagesProvider(): iterable
+    public static function unsupportedMessagesProvider(): iterable
     {
         yield [new ChatMessage('Hello!')];
-        yield [$this->createMock(MessageInterface::class)];
+        yield [(new self())->createMock(MessageInterface::class)];
     }
 
     /**
