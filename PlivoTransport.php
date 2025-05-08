@@ -35,8 +35,8 @@ final class PlivoTransport extends AbstractTransport
         private readonly string $from,
         private readonly ?string $statusUrl = null,
         private readonly ?string $statusUrlMethod = null,
-        HttpClientInterface $client = null,
-        EventDispatcherInterface $dispatcher = null,
+        ?HttpClientInterface $client = null,
+        ?EventDispatcherInterface $dispatcher = null,
     )
     {
         parent::__construct($client, $dispatcher);
