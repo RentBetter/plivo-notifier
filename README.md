@@ -1,3 +1,23 @@
+⚠️ Archived Repository
+=====================
+
+**This repository is archived and no longer maintained.**
+
+Symfony now provides **official Plivo support** via the Symfony Notifier component, which fully replaces this package.
+
+👉 **Please use the official package instead:**
+https://github.com/symfony/plivo-notifier
+
+Reasons for archiving:
+- Official Symfony support is actively maintained
+- Better long-term compatibility with Symfony versions
+- Security fixes and new features are handled upstream
+
+This repository remains available **for historical reference only**.
+
+---
+
+
 Plivo Notifier
 ===============
 
